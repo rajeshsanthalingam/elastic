@@ -1,0 +1,26 @@
+## filebeat + logstash + kafka
+input {
+    beats {
+        port => "5044"
+    }
+}
+filter {
+    grok {
+      match => { "message" => "%{COMBINEDAPACHELOG}" }
+    }
+    date {
+    match => [ "timestamp" , "dd/MMM/yyyy:HH:mm:ss Z" ]
+  }
+  geoip {
+      source => "clientip"
+    }
+}
+output {
+  kafka {
+    bootstrap_servers => "localhost"
+    codec => plain {
+        format => "%{message}"
+    }
+    topic_id =>  "apache"
+  }
+}
